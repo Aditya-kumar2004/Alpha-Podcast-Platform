@@ -5,8 +5,15 @@
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-green?style=for-the-badge)
 
+<div align="center">
+  <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Alpha Podcast Platform" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+  <br/>
+  <br/>
+
 > **A next-generation podcast streaming platform where creators and listeners connect.**  
 > Seamlessly upload, share, and discover audio and video content in a modern, immersive interface.
+
+</div>
 
 ---
 
