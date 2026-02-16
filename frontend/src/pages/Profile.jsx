@@ -301,9 +301,9 @@ const Profile = () => {
                     <div className="grid lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className="lg:col-span-3 space-y-6">
-                            <div className="bg-[#1a1a1a]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl text-center">
+                            <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-xl text-center">
                                 <div className="relative group mx-auto w-32 h-32 mb-4">
-                                    <div className="w-32 h-32 rounded-full overflow-hidden bg-secondary border-4 border-white/5 shadow-2xl relative">
+                                    <div className="w-32 h-32 rounded-full overflow-hidden bg-secondary border-4 border-border/50 shadow-2xl relative">
                                         {preview ? (
                                             <img src={preview} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
@@ -315,7 +315,7 @@ const Profile = () => {
                                             <span className="text-xs font-medium text-white">Change</span>
                                         </div>
                                     </div>
-                                    <label className="absolute bottom-1 right-1 p-2.5 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-all shadow-lg hover:scale-110 border border-white/20">
+                                    <label className="absolute bottom-1 right-1 p-2.5 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-all shadow-lg hover:scale-110 border border-border">
                                         <Camera className="w-4 h-4 text-white" />
                                         <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                                     </label>
@@ -337,7 +337,7 @@ const Profile = () => {
                             </div>
 
                             {/* Navigation */}
-                            <div className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-xl">
+                            <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-4 shadow-xl">
                                 <nav className="space-y-1">
                                     {menuItems.map((item) => (
                                         <button
@@ -345,7 +345,7 @@ const Profile = () => {
                                             onClick={() => setActiveTab(item.id)}
                                             className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${activeTab === item.id
                                                 ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                                                : 'text-muted-foreground hover:bg-white/5 hover:text-white'
+                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -373,10 +373,10 @@ const Profile = () => {
                                                 setActiveTab('uploads');
                                                 setUploadMediaType('audio');
                                             }}
-                                            className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:bg-white/5 transition-colors cursor-pointer"
+                                            className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-xl hover:bg-accent/50 transition-colors cursor-pointer"
                                         >
                                             <div className="flex items-center gap-4 mb-2">
-                                                <div className={`p-3 rounded-2xl bg-white/5 text-primary`}>
+                                                <div className={`p-3 rounded-2xl bg-muted text-primary`}>
                                                     <ListMusic className="w-6 h-6" />
                                                 </div>
                                                 <span className="text-3xl font-bold font-display">{audioCount}</span>
@@ -390,10 +390,10 @@ const Profile = () => {
                                                 setActiveTab('uploads');
                                                 setUploadMediaType('video');
                                             }}
-                                            className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:bg-white/5 transition-colors cursor-pointer"
+                                            className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-xl hover:bg-accent/50 transition-colors cursor-pointer"
                                         >
                                             <div className="flex items-center gap-4 mb-2">
-                                                <div className={`p-3 rounded-2xl bg-white/5 text-purple-500`}>
+                                                <div className={`p-3 rounded-2xl bg-muted text-purple-500`}>
                                                     <Play className="w-6 h-6" />
                                                 </div>
                                                 <span className="text-3xl font-bold font-display">{videoCount}</span>
@@ -404,10 +404,10 @@ const Profile = () => {
                                         {/* Liked Stats */}
                                         <div
                                             onClick={() => setActiveTab('liked')}
-                                            className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl hover:bg-white/5 transition-colors cursor-pointer"
+                                            className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-xl hover:bg-accent/50 transition-colors cursor-pointer"
                                         >
                                             <div className="flex items-center gap-4 mb-2">
-                                                <div className={`p-3 rounded-2xl bg-white/5 text-red-500`}>
+                                                <div className={`p-3 rounded-2xl bg-muted text-red-500`}>
                                                     <Heart className="w-6 h-6" />
                                                 </div>
                                                 <span className="text-3xl font-bold font-display">{profileData?.likedPodcasts?.length || 0}</span>
@@ -416,7 +416,7 @@ const Profile = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl">
+                                    <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-8 shadow-xl">
                                         <h3 className="text-xl font-bold mb-4">Quick Actions</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" asChild>
@@ -447,12 +447,12 @@ const Profile = () => {
                                         </Button>
                                     </div>
 
-                                    <div className="flex items-center space-x-1 bg-white/5 p-1 rounded-xl w-fit mb-6">
+                                    <div className="flex items-center space-x-1 bg-muted p-1 rounded-xl w-fit mb-6">
                                         <button
                                             onClick={() => setUploadMediaType('audio')}
                                             className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${uploadMediaType === 'audio'
                                                 ? 'bg-primary text-primary-foreground shadow-lg'
-                                                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                                                 }`}
                                         >
                                             Audio
@@ -461,7 +461,7 @@ const Profile = () => {
                                             onClick={() => setUploadMediaType('video')}
                                             className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${uploadMediaType === 'video'
                                                 ? 'bg-purple-600 text-white shadow-lg'
-                                                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                                                 }`}
                                         >
                                             Video
@@ -562,7 +562,7 @@ const Profile = () => {
                                     {profileData?.history?.length > 0 ? (
                                         <div className="space-y-4">
                                             {profileData.history.map((item) => (
-                                                <Link to={`/podcast/${item.podcast.id}`} key={item._id} className="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-colors group">
+                                                <Link to={`/podcast/${item.podcast.id}`} key={item._id} className="flex items-center gap-4 p-4 bg-muted/50 hover:bg-muted rounded-2xl transition-colors group">
                                                     <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
                                                         <img src={getImageUrl(item.podcast.image)} alt={item.podcast.title} className="w-full h-full object-cover" />
                                                     </div>
@@ -621,10 +621,10 @@ const Profile = () => {
 
                             {/* SETTINGS */}
                             {activeTab === 'settings' && (
-                                <div className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-8 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <h3 className="text-xl font-bold mb-6">Account Settings</h3>
                                     <div className="space-y-6">
-                                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl border border-border/5">
                                             <div>
                                                 <h4 className="font-medium">Email Notifications</h4>
                                                 <p className="text-sm text-muted-foreground">Receive updates about new episodes</p>
@@ -634,7 +634,7 @@ const Profile = () => {
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="p-6 bg-muted/50 rounded-2xl border border-border/5">
                                             <h4 className="font-medium mb-4">Change Password</h4>
                                             <form onSubmit={handlePasswordChange} className="space-y-4">
                                                 <div className="grid gap-4 md:grid-cols-2">
@@ -643,7 +643,7 @@ const Profile = () => {
                                                         <input
                                                             type="password"
                                                             required
-                                                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-white"
+                                                            className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-foreground"
                                                             value={passwords.current}
                                                             onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
                                                         />
@@ -655,7 +655,7 @@ const Profile = () => {
                                                         <input
                                                             type="password"
                                                             required
-                                                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-white"
+                                                            className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-foreground"
                                                             value={passwords.new}
                                                             onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
                                                         />
@@ -665,7 +665,7 @@ const Profile = () => {
                                                         <input
                                                             type="password"
                                                             required
-                                                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-white"
+                                                            className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all text-foreground"
                                                             value={passwords.confirm}
                                                             onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
                                                         />
@@ -705,7 +705,7 @@ const Profile = () => {
                                                     <div className="space-y-2">
                                                         <label className="text-xs font-medium text-muted-foreground uppercase">Reason for leaving</label>
                                                         <textarea
-                                                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all text-white min-h-[80px]"
+                                                            className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all text-foreground min-h-[80px]"
                                                             placeholder="Please tell us why you are deleting your account..."
                                                             value={deleteReason}
                                                             onChange={(e) => setDeleteReason(e.target.value)}
@@ -737,7 +737,7 @@ const Profile = () => {
                                                         <p className="text-xs text-muted-foreground">We sent a 6-digit code to your email to verify this request.</p>
                                                         <input
                                                             type="text"
-                                                            className="w-full bg-background/50 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all text-white tracking-widest text-center text-lg font-mono placeholder:text-muted-foreground/30"
+                                                            className="w-full bg-background/50 border border-border rounded-xl px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all text-foreground tracking-widest text-center text-lg font-mono placeholder:text-muted-foreground/30"
                                                             placeholder="000000"
                                                             maxLength={6}
                                                             value={deleteOtp}
@@ -778,8 +778,8 @@ const Profile = () => {
 
 // Reusable Empty State Component
 const EmptyState = ({ icon: Icon, title, description, actionLink, actionText }) => (
-    <div className="bg-[#1a1a1a]/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-xl min-h-[400px] flex flex-col items-center justify-center text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+    <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-3xl p-8 shadow-xl min-h-[400px] flex flex-col items-center justify-center text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
             <Icon className="w-8 h-8 text-muted-foreground/50" />
         </div>
         <div>
