@@ -1,16 +1,20 @@
 
 # 🎙️ ALPHA Podcast Platform
 
-![MERN Stack](https://img.shields.io/badge/Stack-MERN-success?style=for-the-badge&logo=react)
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active-green?style=for-the-badge)
-
 <div align="center">
-  <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Alpha Podcast Platform" width="100%" style="border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-  <br/>
-  <br/>
 
-> **A next-generation podcast streaming platform where creators and listeners connect.**  
+![MERN Stack](https://img.shields.io/badge/Stack-MERN-success?style=for-the-badge&logo=react)
+![Cloudinary](https://img.shields.io/badge/Media-Cloudinary-3448C5?style=for-the-badge&logo=cloudinary)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge)
+
+<img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Alpha Podcast Platform" width="100%" style="border-radius: 10px;" />
+
+<br/>
+<br/>
+
+> **A next-generation podcast streaming platform where creators and listeners connect.**
 > Seamlessly upload, share, and discover audio and video content in a modern, immersive interface.
 
 </div>
@@ -19,129 +23,182 @@
 
 ## 🌟 Overview
 
-**ALPHA Podcast Platform** is a comprehensive full-stack application designed to modernize the podcast listening experience. Built with performance and aesthetics in mind, it features a sleek, dark-mode-first UI, real-time interactions, and a robust content management system for creators.
+**ALPHA Podcast Platform** is a comprehensive full-stack application designed to modernize the podcast listening experience. Built with performance and aesthetics in mind, it features a sleek dark-mode UI, real-time interactions, Cloudinary media storage, OTP email verification, and a robust content management system for creators.
 
-Whether you're a listener looking for the next big show or a creator building an audience, ALPHA provides the tools you need.
+Whether you're a listener discovering new shows or a creator building an audience — ALPHA has everything you need.
 
 ---
 
 ## ✨ Key Features
 
-- **🔐 Secure Authentication**: Robust JWT-based signup and login system with encrypted passwords.
-- **🎧 Immersive Audio Player**: Global persistent player that continues playback while you browse.
-- **📹 Video Podcast Support**: Full support for video episodes with a custom theater mode.
-- **🎨 Modern UI/UX**: Built with **Tailwind CSS** and **Shadcn Principles** for a premium, responsive glassmorphism aesthetic.
-- **📂 Content Management**: Creators can easily upload, edit, and delete their podcast episodes.
-- **❤️ Interactive Community**: Like episodes, subscribe to channels, and view real-time engagement stats.
-- **🔍 Smart Discovery**: Filter content by categories, trending shows, and search functionality.
-- **📱 Fully Responsive**: Optimized experience across desktop, tablet, and mobile devices.
+- **🔐 Secure Auth** — JWT-based login with OTP email verification via Nodemailer
+- **☁️ Cloudinary Uploads** — Audio, video & profile images stored on Cloudinary (Vercel-compatible)
+- **📊 Real-time Upload Progress** — Live progress bar during video/audio uploads
+- **🎧 Global Audio Player** — Persistent player continues playback while browsing
+- **📹 Video Podcast Support** — Custom video player with theater mode
+- **👤 Profile Management** — Update or remove profile picture with instant preview
+- **🔔 Email Notifications** — Creators get professional HTML emails when someone subscribes
+- **🔒 Role-Based Access** — Guests see 3 sample podcasts; full library unlocked after login
+- **❤️ Interactions** — Like, subscribe, comment on podcasts
+- **🔍 Smart Browse** — Filter by category, search, trending shows
+- **📱 Fully Responsive** — Optimized for desktop, tablet and mobile
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Architecture | Technologies |
+| Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white) |
-| **Backend** | ![Node](https://img.shields.io/badge/Node.js-43853D?style=flat&logo=node.js&logoColor=white) ![Express](https://img.shields.io/badge/Express.js-404D59?style=flat) |
-| **Database** | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white) |
-| **State Mgmt** | React Context API |
-| **Authentication** | JWT (JSON Web Tokens) & Bcrypt |
+| **Frontend** | React 18, Vite, Tailwind CSS, Lucide Icons, Sonner Toast |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB Atlas (Mongoose) |
+| **Media Storage** | Cloudinary (audio, video, thumbnails, profile pics) |
+| **Authentication** | JWT + Bcrypt + OTP via Nodemailer |
+| **Deployment** | Vercel (frontend + backend serverless) |
+| **State Management** | React Context API (Auth, Audio, Toast, Theme) |
 
 ---
 
 ## 📂 Project Structure
 
-```bash
+```
 ALPHA/
-├── 📂 backend/              # Node.js & Express Server
-│   ├── 📂 models/           # Mongoose Schemas (User, Podcast, etc.)
-│   ├── 📂 routes/           # API Endpoints
-│   ├── 📂 middleware/       # Auth & Error Handling
-│   ├── 📂 utils/            # Helper functions (Email, etc.)
-│   ├── server.js            # Entry Point
-│   └── package.json         # Backend Dependencies
+├── 📂 backend/
+│   ├── 📂 api/
+│   │   └── index.js          ← Vercel serverless entry point
+│   ├── 📂 config/
+│   │   └── cloudinary.js     ← Cloudinary storage config
+│   ├── 📂 middleware/
+│   │   └── authMiddleware.js ← JWT protect middleware
+│   ├── 📂 models/
+│   │   ├── User.js
+│   │   ├── Podcast.js
+│   │   ├── Comment.js
+│   │   ├── Subscription.js
+│   │   └── Subscriber.js
+│   ├── 📂 routes/
+│   │   ├── auth.js           ← Register, Login, OTP, Upload/Remove Profile
+│   │   ├── podcasts.js       ← CRUD for podcasts
+│   │   ├── users.js          ← Profile, likes, history
+│   │   ├── interactions.js   ← Subscribe, comment, like
+│   │   ├── subscribers.js    ← Newsletter subscribers
+│   │   └── contact.js        ← Contact form
+│   ├── 📂 utils/
+│   │   └── email.js          ← OTP + Subscriber notification emails
+│   ├── server.js             ← Local dev server
+│   ├── vercel.json           ← Vercel backend config
+│   └── package.json
 │
-└── 📂 frontend/             # React Client
+└── 📂 frontend/
     ├── 📂 src/
-    │   ├── 📂 components/   # Reusable UI Components
-    │   ├── 📂 pages/        # Application Routes/Views
-    │   ├── 📂 context/      # Global State (Auth, Audio, Theme)
-    │   ├── 📂 hooks/        # Custom React Hooks
-    │   ├── 📂 lib/          # Utilities & API Config
-    │   ├── App.jsx          # Main App Component
-    │   └── main.jsx         # DOM Entry Point
-    └── package.json         # Frontend Dependencies
+    │   ├── 📂 components/
+    │   │   ├── layout/       ← Navbar, Footer, Layout
+    │   │   ├── podcast/      ← PodcastCard, VideoPlayer, EpisodeCard
+    │   │   └── ui/           ← Button, Badge, etc.
+    │   ├── 📂 context/
+    │   │   ├── AuthContext.jsx
+    │   │   ├── AudioContext.jsx
+    │   │   ├── ToastContext.jsx
+    │   │   └── ThemeContext.jsx
+    │   ├── 📂 pages/
+    │   │   ├── Index.jsx     ← Homepage with guest/member views
+    │   │   ├── Browse.jsx
+    │   │   ├── Upload.jsx    ← Upload with live progress bar
+    │   │   ├── Profile.jsx   ← Profile mgmt with photo options
+    │   │   ├── Login.jsx
+    │   │   ├── Register.jsx
+    │   │   └── ...
+    │   ├── 📂 lib/
+    │   │   └── api.js        ← API_URL config (dev/prod)
+    │   └── main.jsx
+    ├── vercel.json           ← Vite SPA routing config
+    └── package.json
 ```
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Local Development Setup
 
-Follow these steps to run the project locally.
-
-### 1. Repository Setup
+### 1. Clone the repo
 ```bash
-git clone <your-repo-url>
-cd ALPHA
+git clone https://github.com/Aditya-kumar2004/Alpha-Podcast-Platform.git
+cd Alpha-Podcast-Platform
 ```
 
-### 2. Backend Configuration
-Navigate to the backend folder and install dependencies:
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` directory with the following credentials:
+Create a `.env` file in the `backend/` directory:
 ```env
-MONGO_URI=mongodb://127.0.0.1:27017/podcast-hub
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/podcast-hub
 PORT=5000
-JWT_SECRET=your_super_secret_key_123
+JWT_SECRET=your_super_secret_key
 EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-CLIENT_URL=http://localhost:5173
+EMAIL_PASS=your_gmail_app_password
+FRONTEND_URL=http://localhost:8080
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Start the backend server:
+Start backend:
 ```bash
-npm run dev
-# Server will run on http://localhost:5000
+nodemon server.js
+# Runs on http://localhost:5000
 ```
 
-### 3. Frontend Configuration
-Open a new terminal, navigate to the frontend folder, and install dependencies:
+### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
-```
-
-Start the frontend development server:
-```bash
 npm run dev
-# Client will run on http://localhost:5173
+# Runs on http://localhost:8080
 ```
 
 ---
 
-## 🤝 Contributing
+## ☁️ Production Deployment (Vercel)
 
-Contributions are welcome! If you have suggestions or want to improve the codebase:
+### Backend
+1. New Vercel project → Root Directory: `backend`
+2. Add all environment variables from `.env` above
+3. Set `FRONTEND_URL` to your deployed frontend URL
 
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
+### Frontend
+1. New Vercel project → Root Directory: `frontend`
+2. Add environment variable:
+   ```
+   VITE_API_URL=https://your-backend.vercel.app
+   ```
+
+---
+
+## 🔑 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Register + send OTP |
+| `POST` | `/api/auth/verify-otp` | Verify OTP |
+| `POST` | `/api/auth/login` | Login |
+| `POST` | `/api/auth/upload-profile` | Upload profile picture |
+| `DELETE` | `/api/auth/remove-profile` | Remove profile picture |
+| `GET` | `/api/podcasts` | Get all podcasts |
+| `POST` | `/api/podcasts` | Create podcast |
+| `POST` | `/api/interactions/subscribe/:id` | Subscribe to creator |
+| `POST` | `/api/users/like/:id` | Like a podcast |
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License.
 
 ---
 
 <div align="center">
-  <p>Made with Aditya Kumar by the ALPHA Team</p>
+  <p>Made with ❤️ by <strong>Aditya Kumar</strong></p>
+  <p><em>ALPHA Podcast Platform — Where creators meet their audience.</em></p>
 </div>
