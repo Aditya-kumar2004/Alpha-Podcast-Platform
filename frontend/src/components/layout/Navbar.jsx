@@ -26,6 +26,13 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  // Handle both Cloudinary full URLs and legacy local paths
+  const resolveProfileUrl = (pic) => {
+    if (!pic) return null;
+    if (pic.startsWith('http')) return pic;
+    return `${BASE_URL}${pic}`;
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container mx-auto px-4">
@@ -105,9 +112,10 @@ const Navbar = () => {
                 <button className="flex items-center gap-3 p-1.5 rounded-full hover:bg-white/5 transition-colors focus:outline-none">
                   {user.profilePicture ? (
                     <img
-                      src={`${BASE_URL}${user.profilePicture}`}
+                      src={resolveProfileUrl(user.profilePicture)}
                       alt="Profile"
                       className="w-9 h-9 rounded-full object-cover border-2 border-primary/20 shadow-lg shadow-primary/20"
+                      onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-primary/20">
@@ -119,9 +127,23 @@ const Navbar = () => {
                 {/* Dropdown Menu */}
                 <div className="absolute top-full right-0 mt-2 w-64 p-2 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl opacity-0 invisible group-hover/profile:opacity-100 group-hover/profile:visible transition-all duration-200 transform origin-top-right translate-y-2 group-hover/profile:translate-y-0 z-50">
                   {/* User Info */}
-                  <div className="px-4 py-3 mb-2 border-b border-white/5">
-                    <p className="font-medium text-white line-clamp-1">{user.username}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{user.email}</p>
+                  <div className="px-4 py-3 mb-2 border-b border-white/5 flex items-center gap-3">
+                    {user.profilePicture ? (
+                      <img
+                        src={resolveProfileUrl(user.profilePicture)}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-primary/30 flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                        {user.username.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-medium text-white line-clamp-1">{user.username}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{user.email}</p>
+                    </div>
                   </div>
 
                   {/* Menu Items */}

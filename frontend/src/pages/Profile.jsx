@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { Camera, Save, User, Clock, Heart, ListMusic, Settings, ChevronRight, Play, CloudUpload, Edit, Trash } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
+import { Camera, Save, User, Clock, Heart, ListMusic, Settings, ChevronRight, Play, CloudUpload, Edit, Trash, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PodcastCard from '@/components/podcast/PodcastCard';
 import VideoPlayer from '@/components/podcast/VideoPlayer';
@@ -10,9 +11,18 @@ import { API_URL, BASE_URL } from '@/lib/api';
 
 const Profile = () => {
     const { user, login, logout } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const [image, setImage] = useState(null);
-    const [preview, setPreview] = useState(user?.profilePicture ? `${BASE_URL}${user.profilePicture}` : null);
+
+    // Helper: resolve profile picture URL (handles Cloudinary full URLs + legacy local paths)
+    const resolveProfileUrl = (pic) => {
+        if (!pic) return null;
+        if (pic.startsWith('http')) return pic;          // Cloudinary URL ✅
+        return `${BASE_URL}${pic}`;                      // Legacy local path
+    };
+
+    const [preview, setPreview] = useState(resolveProfileUrl(user?.profilePicture));
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
 
@@ -62,6 +72,13 @@ const Profile = () => {
         }
     }, [user, activeTab]);
 
+    // Sync preview whenever user.profilePicture changes (e.g. after login/upload)
+    useEffect(() => {
+        if (user?.profilePicture && !image) {
+            setPreview(resolveProfileUrl(user.profilePicture));
+        }
+    }, [user?.profilePicture]);
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -87,17 +104,51 @@ const Profile = () => {
                 body: formData
             });
 
-            const data = await res.json();
+            const text = await res.text(); // Read body ONCE
+            let data;
+            try { data = JSON.parse(text); } catch { data = { message: text }; }
+
             if (res.ok) {
                 login(data);
-                alert('Profile updated successfully!');
+                // Update preview immediately with the new Cloudinary URL from response
+                if (data.profilePicture) {
+                    setPreview(resolveProfileUrl(data.profilePicture));
+                }
+                showToast('Profile picture updated successfully!', 'success');
                 setImage(null);
             } else {
-                alert(data.message || 'Upload failed');
+                showToast(data.message || 'Upload failed', 'error');
             }
         } catch (error) {
-            console.error(error);
-            alert('Something went wrong');
+            console.error('[Profile Upload Error]', error);
+            showToast(`Error: ${error.message}`, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveProfile = async () => {
+        setLoading(true);
+        try {
+            const token = user.token;
+            const res = await fetch(`${API_URL}/auth/remove-profile`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const text = await res.text();
+            let data;
+            try { data = JSON.parse(text); } catch { data = { message: text }; }
+
+            if (res.ok) {
+                login(data);
+                setPreview(null);
+                setImage(null);
+                showToast('Profile picture removed.', 'info');
+            } else {
+                showToast(data.message || 'Failed to remove picture', 'error');
+            }
+        } catch (error) {
+            showToast(`Error: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
@@ -127,14 +178,14 @@ const Profile = () => {
 
             const data = await res.json();
             if (res.ok) {
-                alert('Password changed successfully');
+                showToast('Password changed successfully!', 'success');
                 setPasswords({ current: '', new: '', confirm: '' });
             } else {
-                alert(data.message || 'Failed to change password');
+                showToast(data.message || 'Failed to change password', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Something went wrong');
+            showToast('Something went wrong. Please try again.', 'error');
         } finally {
             setPasswordLoading(false);
         }
@@ -154,10 +205,10 @@ const Profile = () => {
 
             if (res.ok) {
                 setMyPodcasts(myPodcasts.filter(p => p.id !== podcastId));
-                alert("Podcast deleted successfully");
+                showToast('Podcast deleted successfully', 'success');
             } else {
                 const data = await res.json();
-                alert(data.message || "Failed to delete podcast");
+                showToast(data.message || 'Failed to delete podcast', 'error');
             }
         } catch (error) {
             console.error("Delete failed", error);
@@ -182,14 +233,14 @@ const Profile = () => {
 
             if (res.ok) {
                 setDeletionStep('otp');
-                alert("OTP sent to your email address");
+                showToast('OTP sent to your email address', 'info');
             } else {
                 const data = await res.json();
-                alert(data.message || 'Failed to send OTP');
+                showToast(data.message || 'Failed to send OTP', 'error');
             }
         } catch (error) {
             console.error("OTP send failed", error);
-            alert("Something went wrong");
+            showToast('Something went wrong. Please try again.', 'error');
         } finally {
             setDeleteLoading(false);
         }
@@ -219,16 +270,16 @@ const Profile = () => {
             });
 
             if (res.ok) {
-                alert("Account deleted successfully. We're sorry to see you go.");
+                showToast("Account deleted. We're sorry to see you go.", 'info');
                 logout();
                 navigate('/');
             } else {
                 const data = await res.json();
-                alert(data.message || 'Failed to delete account');
+                showToast(data.message || 'Failed to delete account', 'error');
             }
         } catch (error) {
             console.error("Delete account failed", error);
-            alert("Something went wrong");
+            showToast('Something went wrong. Please try again.', 'error');
         } finally {
             setDeleteLoading(false);
         }
@@ -303,6 +354,15 @@ const Profile = () => {
                         <div className="lg:col-span-3 space-y-6">
                             <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl p-6 shadow-xl text-center">
                                 <div className="relative group mx-auto w-32 h-32 mb-4">
+                                    {/* Hidden file input */}
+                                    <input
+                                        id="profile-file-input"
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                    />
+
                                     <div className="w-32 h-32 rounded-full overflow-hidden bg-secondary border-4 border-border/50 shadow-2xl relative">
                                         {preview ? (
                                             <img src={preview} alt="Profile" className="w-full h-full object-cover" />
@@ -311,21 +371,46 @@ const Profile = () => {
                                                 {user?.username?.charAt(0).toUpperCase()}
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-xs font-medium text-white">Change</span>
+                                    </div>
+
+                                    {/* Camera button — opens dropdown */}
+                                    <div className="absolute bottom-1 right-1 group/menu">
+                                        <button
+                                            className="p-2.5 bg-primary rounded-full hover:bg-primary/90 transition-all shadow-lg hover:scale-110 border border-border focus:outline-none"
+                                        >
+                                            <Camera className="w-4 h-4 text-white" />
+                                        </button>
+
+                                        {/* Dropdown Options */}
+                                        <div className="absolute bottom-full right-0 mb-2 w-44 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden
+                                            opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible
+                                            transition-all duration-200 origin-bottom-right z-50">
+                                            <label
+                                                htmlFor="profile-file-input"
+                                                className="flex items-center gap-2.5 px-4 py-3 text-sm text-white hover:bg-white/10 cursor-pointer transition-colors"
+                                            >
+                                                <Camera className="w-4 h-4 text-primary" />
+                                                Update Photo
+                                            </label>
+                                            {preview && (
+                                                <button
+                                                    onClick={handleRemoveProfile}
+                                                    disabled={loading}
+                                                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                    Remove Photo
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <label className="absolute bottom-1 right-1 p-2.5 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-all shadow-lg hover:scale-110 border border-border">
-                                        <Camera className="w-4 h-4 text-white" />
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                                    </label>
                                 </div>
                                 <h2 className="text-xl font-bold font-display">{user?.username}</h2>
                                 <p className="text-sm text-muted-foreground mb-4">{user?.email}</p>
                                 {image && (
                                     <Button size="sm" onClick={handleUpload} disabled={loading} className="w-full gap-2 mb-2">
                                         <Save className="w-4 h-4" />
-                                        {loading ? 'Saving...' : 'Save Photo'}
+                                        {loading ? 'Saving...' : 'Save Profile'}
                                     </Button>
                                 )}
                                 {user?.isVerified && (

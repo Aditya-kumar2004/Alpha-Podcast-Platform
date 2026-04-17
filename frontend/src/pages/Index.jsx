@@ -158,35 +158,11 @@ const Index = () => {
     playTrack(track);
   };
 
-  // Generate 10 Sample Audio Items (using real uploaded files if available, else placeholders)
-  // We use the 2 files we saw: audio-1765979900780.mp3, audio-1765994527600.mp3
-  // If realPodcasts has audio files, use them.
+  // Audio Podcasts Section — show REAL uploads, fallback to static if empty
   const uploadedAudioPodcasts = realPodcasts.filter(p => !p.type || p.type === 'audio');
-
-  // Create a list of 10 items, cycling through available content
-  const sampleAudioItems = Array.from({ length: 10 }).map((_, i) => {
-    // Use uploaded podcast if available, else cycle key
-    const sourcePodcast = uploadedAudioPodcasts[i % uploadedAudioPodcasts.length] || podcasts[i % podcasts.length];
-
-    // Fallback audio URLs if the source doesn't have one that works
-    // We point to the ones we know exist in uploads/audio if meaningful, or use the source's url
-    let audioUrl = sourcePodcast.audioUrl;
-
-    // For demo purposes, forced mapping to known files if no url
-    if (!audioUrl || !audioUrl.includes('mp3')) {
-      // Toggle between the 2 known files
-      audioUrl = i % 2 === 0 ? "/uploads/audio/audio-1765979900780.mp3" : "/uploads/audio/audio-1765994527600.mp3";
-    }
-
-    return {
-      id: `sample-audio-${i}`,
-      title: `Episode ${i + 1}: ${sourcePodcast.title}`,
-      podcast: sourcePodcast.author || sourcePodcast.user?.username || "Unknown",
-      image: sourcePodcast.image?.startsWith('/') ? `${BASE_URL}${sourcePodcast.image}` : sourcePodcast.image,
-      audioUrl: audioUrl,
-      duration: sourcePodcast.episodes?.[0]?.duration || "10:00"
-    };
-  });
+  const audioPodcastsToShow = uploadedAudioPodcasts.length > 0
+    ? uploadedAudioPodcasts.slice(0, 10)
+    : podcasts.filter(p => !p.type).slice(0, 10);
 
   return (
     <Layout>
@@ -343,7 +319,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Audio Podcasts Section (NEW) */}
+      {/* Audio Podcasts Section */}
       <section className="py-16 bg-[#0f0f0f] text-white">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -353,37 +329,56 @@ const Index = () => {
                 Audio Podcasts
               </h2>
             </div>
+            <Link to="/browse" className="text-primary hover:text-primary/80 transition-colors flex items-center gap-2 font-medium">
+              View All →
+            </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {sampleAudioItems.map((item) => (
-              <div key={item.id} className="group relative bg-white/5 rounded-2xl p-4 hover:bg-white/10 transition-all duration-300">
-                <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
-                  <img
-                    src={getImageUrl(item.image) || item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {/* Play Overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => handlePlayAudio(item)}
-                      className="bg-primary text-white p-3 rounded-full hover:scale-110 transition-transform flex items-center justify-center transform translate-y-4 group-hover:translate-y-0 duration-300"
-                    >
-                      {currentUser ? (
-                        <Play className="w-6 h-6 ml-1 fill-current" />
-                      ) : (
-                        <Lock className="w-5 h-5" />
-                      )}
-                    </button>
+
+          {audioPodcastsToShow.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <Headphones className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p>No audio podcasts yet. Be the first to upload!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              {audioPodcastsToShow.map((item) => (
+                <Link
+                  key={item._id || item.id}
+                  to={`/podcast/${item._id || item.id}`}
+                  className="group relative bg-white/5 rounded-2xl p-4 hover:bg-white/10 transition-all duration-300"
+                >
+                  <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
+                    <img
+                      src={getImageUrl(item.image) || '/placeholder.jpg'}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => { e.target.src = 'https://placehold.co/400x400/1a1a1a/666?text=🎵'; }}
+                    />
+                    {/* Play Overlay */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!currentUser) {
+                            if (confirm("You must be signed in to listen. Go to login?")) navigate("/login");
+                            return;
+                          }
+                          playTrack({ id: item._id, title: item.title, audioUrl: item.audioUrl, image: getImageUrl(item.image), podcast: item.user?.username || item.author });
+                        }}
+                        className="bg-primary text-white p-3 rounded-full hover:scale-110 transition-transform flex items-center justify-center"
+                      >
+                        {currentUser ? <Play className="w-6 h-6 ml-1 fill-current" /> : <Lock className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg line-clamp-1 mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
-                  <p className="text-sm text-gray-400 line-clamp-1">{item.podcast}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+                  <div>
+                    <h3 className="font-semibold text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
+                    <p className="text-xs text-gray-400 line-clamp-1">{item.user?.username || item.author || 'Unknown'}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -586,38 +581,28 @@ const Index = () => {
             <h2 className="font-display text-2xl md:text-3xl font-bold">
               Latest Audio Podcasts
             </h2>
-            <Link
-              to="/browse"
-              className="text-sm text-primary hover:underline font-medium"
-            >
-              View All
-            </Link>
+            {currentUser && (
+              <Link to="/browse" className="text-sm text-primary hover:underline font-medium">
+                View All
+              </Link>
+            )}
           </div>
 
-          {/* Logic to get latest unique audio podcasts from real uploads + fallback */}
           {(() => {
-            // 1. Get real audio podcasts associated with users
+            // All real audio podcasts
             const realAudio = realPodcasts.filter(p => !p.type || p.type === 'audio');
 
-            // 2. Reduce to unique creators (showing their latest upload)
-            const uniqueAudio = realAudio.reduce((acc, podcast) => {
-              const userId = podcast.user && typeof podcast.user === 'object' ? podcast.user._id : podcast.author;
-              const exists = acc.find(p => {
-                const pUserId = p.user && typeof p.user === 'object' ? p.user._id : p.author;
-                return pUserId === userId;
-              });
-              if (!exists) acc.push(podcast);
-              return acc;
-            }, []);
+            // Fallback to static if nothing in DB
+            const allAudio = realAudio.length > 0
+              ? realAudio
+              : podcasts.filter(p => !p.type).slice(0, 8);
 
-            // 3. Fallback to static podcasts if empty (just for demo if needed, or leave empty)
-            // Using 'podcasts' array imported from data
-            if (uniqueAudio.length === 0 && realPodcasts.length === 0) {
-              // Demo mode: slice some static podcasts
-              uniqueAudio.push(...podcasts.filter(p => !p.type).slice(0, 4));
-            }
+            // Guest: only show 3 + a "Login to see more" card
+            const guestList = allAudio.slice(0, 3);
+            // Logged in: show up to 8
+            const memberList = allAudio.slice(0, 8);
 
-            const displayList = uniqueAudio.slice(0, 8); // Show up to 8
+            const displayList = currentUser ? memberList : guestList;
 
             return (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -627,12 +612,32 @@ const Index = () => {
                     id={podcast.id || podcast._id}
                     title={podcast.title}
                     author={podcast.author || (podcast.user?.username)}
-                    image={getImageUrl(podcast.image)} // Use helper
+                    image={getImageUrl(podcast.image)}
                     category={podcast.category}
-                    userId={podcast.user?._id} // For profile link
-                    authorImg={podcast.user?.profilePicture ? getImageUrl(podcast.user.profilePicture) : null} // Pass profile pic
+                    userId={podcast.user?._id}
+                    authorImg={podcast.user?.profilePicture ? getImageUrl(podcast.user.profilePicture) : null}
                   />
                 ))}
+
+                {/* Guest lock card — 4th slot */}
+                {!currentUser && (
+                  <Link
+                    to="/login"
+                    className="group relative bg-card/50 border border-border/50 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-6 text-center hover:border-primary/50 transition-all duration-300 min-h-[220px]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <Lock className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="font-semibold text-white mb-1">Unlock Full Library</p>
+                      <p className="text-xs text-muted-foreground mb-4">Sign in to access hundreds more podcasts</p>
+                      <span className="inline-block px-4 py-2 bg-primary text-white text-xs font-bold rounded-full group-hover:bg-primary/90 transition-colors">
+                        Sign In Free →
+                      </span>
+                    </div>
+                  </Link>
+                )}
               </div>
             );
           })()}

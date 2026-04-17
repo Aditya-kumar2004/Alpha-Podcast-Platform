@@ -4,35 +4,27 @@ import otpGenerator from 'otp-generator';
 import User from '../models/User.js';
 import { sendOTP } from '../utils/email.js';
 import multer from 'multer';
-import path from 'path';
+import { profileStorage } from '../config/cloudinary.js';
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename(req, file, cb) {
-        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
-    },
-});
-
+// Use Cloudinary storage for profile picture uploads (Vercel compatible)
 const upload = multer({
-    storage,
+    storage: profileStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for profile pictures
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     },
 });
 
 function checkFileType(file, cb) {
-    const filetypes = /jpg|jpeg|png/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
+    const filetypes = /jpg|jpeg|png|gif|webp/;
+    const ext = file.originalname.split('.').pop().toLowerCase();
 
-    if (extname && mimetype) {
+    if (filetypes.test(ext)) {
         return cb(null, true);
     } else {
-        cb('Images only!');
+        cb(new Error('Images only! (jpg, jpeg, png, gif, webp)'));
     }
 }
 
@@ -122,6 +114,8 @@ router.post('/verify-otp', async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
+            profilePicture: user.profilePicture || null,
+            isVerified: user.isVerified,
             token: generateToken(user._id),
         });
     } catch (error) {
@@ -144,6 +138,8 @@ router.post('/login', async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
+                profilePicture: user.profilePicture || null,
+                isVerified: user.isVerified,
                 token: generateToken(user._id),
             });
         } else {
@@ -158,21 +154,50 @@ router.post('/upload-profile', protect, upload.single('image'), async (req, res)
     try {
         const user = await User.findById(req.user._id);
 
-        if (user) {
-            user.profilePicture = `/uploads/${req.file.filename}`;
-            await user.save();
-            res.json({
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                profilePicture: user.profilePicture,
-                isVerified: user.isVerified,
-                token: generateToken(user._id),
-            });
-        } else {
-            res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No image file provided' });
+        }
+
+        // Cloudinary returns the secure URL in req.file.path
+        user.profilePicture = req.file.path;
+        await user.save();
+        res.json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            token: generateToken(user._id),
+        });
     } catch (error) {
+        console.error('[Profile Upload Error]', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @desc    Remove Profile Picture
+router.delete('/remove-profile', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        user.profilePicture = null;
+        await user.save();
+
+        res.json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            profilePicture: null,
+            isVerified: user.isVerified,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        console.error('[Remove Profile Error]', error);
         res.status(500).json({ message: error.message });
     }
 });

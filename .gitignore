@@ -1,6 +1,37 @@
-node_modules
-.DS_Store
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment Variables (never commit real secrets!)
 .env
 .env.local
-logs
+.env.production
+.env.*.local
+
+# Build output
+dist/
+build/
+.vercel/
+
+# Uploads (large media files — use cloud storage in production)
+backend/uploads/
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Analysis / temp docs
+alpha_platform_deep_dive.md
+*.md.bak

@@ -4,14 +4,9 @@ import Podcast from '../models/Podcast.js';
 import Comment from '../models/Comment.js';
 import Subscription from '../models/Subscription.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { sendNewSubscriberEmail } from '../utils/email.js';
 
 const router = express.Router();
-
-// Mock Email Function
-const sendEmailNotification = (toEmail, subject, text) => {
-    console.log(`[EMAIL MOCK] To: ${toEmail} | Subject: ${subject} | Body: ${text}`);
-    // In real app, use nodemailer here
-};
 
 // @route   POST /api/interactions/subscribe/:creatorId
 // @desc    Toggle subscription to a creator
@@ -60,12 +55,13 @@ router.post('/subscribe/:creatorId', protect, async (req, res) => {
                 channelName: creator.username
             });
 
-            // Send Notification
-            sendEmailNotification(
-                creator.email,
-                "New Subscriber!",
-                `User ${user.username} has subscribed to your channel!`
-            );
+            // Send professional email notification to creator
+            sendNewSubscriberEmail({
+                creatorEmail: creator.email,
+                creatorName: creator.username,
+                subscriberName: user.username,
+                totalSubscribers: creator.subscribers.length,
+            });
 
             res.json({ message: "Subscribed", isSubscribed: true, subscribersCount: creator.subscribers.length });
         }

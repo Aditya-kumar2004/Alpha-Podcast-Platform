@@ -3,6 +3,7 @@ import { Upload as UploadIcon, Music, Video, Image as ImageIcon, X, CheckCircle,
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { categories as defaultCategories } from "@/data/podcasts";
 import { API_URL } from "@/lib/api";
 
@@ -11,10 +12,12 @@ const Upload = () => {
     const [searchParams] = useSearchParams();
     const editId = searchParams.get('edit');
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [fetching, setFetching] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // Form State
     const [title, setTitle] = useState("");
@@ -83,17 +86,18 @@ const Upload = () => {
     const handleSubmit = async () => {
         setLoading(true);
         setSuccess(false);
+        setUploadProgress(0);
 
         const token = user?.token || localStorage.getItem('token');
         if (!token) {
-            alert("You must be logged in to upload.");
+            showToast('You must be logged in to upload.', 'warning');
             setLoading(false);
             return;
         }
 
         try {
             if (editId) {
-                // EDIT MODE
+                // EDIT MODE — no file upload, use fetch
                 const res = await fetch(`${API_URL}/podcasts/${editId}`, {
                     method: 'PUT',
                     headers: {
@@ -108,10 +112,10 @@ const Upload = () => {
                     setTimeout(() => navigate('/profile'), 1500);
                 } else {
                     const data = await res.json();
-                    alert(data.message || "Update failed");
+                    showToast(data.message || 'Update failed', 'error');
                 }
             } else {
-                // CREATE MODE
+                // CREATE MODE — use XHR to track upload progress
                 const formData = new FormData();
                 formData.append("title", title);
                 formData.append("description", description);
@@ -122,33 +126,50 @@ const Upload = () => {
                 if (videoFile) formData.append("video", videoFile);
                 if (thumbnail) formData.append("image", thumbnail);
 
-                const response = await fetch(`${API_URL}/podcasts`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                });
+                await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
 
-                if (response.ok) {
-                    setSuccess(true);
-                    setTimeout(() => navigate('/profile'), 2000);
-                } else {
-                    let errorMessage = "Upload failed";
-                    try {
-                        const data = await response.json();
-                        errorMessage = data.message || errorMessage;
-                    } catch (e) {
-                        const text = await response.text();
-                        console.error("Non-JSON Response:", text);
-                        errorMessage = `Server Error: ${text.slice(0, 100)}`; // Show preview of error
-                    }
-                    alert(errorMessage);
-                }
+                    // Track upload progress (browser → backend)
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            // Upload to backend = 0–80%, Cloudinary processing = 80–100%
+                            const pct = Math.round((e.loaded / e.total) * 80);
+                            setUploadProgress(pct);
+                        }
+                    };
+
+                    xhr.onload = () => {
+                        setUploadProgress(100);
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            setSuccess(true);
+                            setTimeout(() => navigate('/profile'), 2000);
+                            resolve();
+                        } else {
+                            let msg = 'Upload failed';
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                msg = data.message || msg;
+                            } catch {
+                                msg = xhr.responseText?.slice(0, 150) || msg;
+                            }
+                            showToast(msg, 'error');
+                            resolve();
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        showToast('Network error. Please check your connection.', 'error');
+                        reject(new Error('Network error'));
+                    };
+
+                    xhr.open('POST', `${API_URL}/podcasts`);
+                    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                    xhr.send(formData);
+                });
             }
         } catch (error) {
             console.error("Error submitting:", error);
-            alert(`Error: ${error.message}`);
+            showToast(`Error: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
@@ -421,24 +442,58 @@ const Upload = () => {
             </div>
 
             {/* Bottom Bar - Action Buttons */}
-            <div className="h-20 bg-[#121212] border-t border-white/10 flex items-center justify-between px-8">
-                <Button variant="ghost" onClick={handleBack}>
-                    {step === 1 ? "Cancel" : "Back"}
-                </Button>
+            <div className="bg-[#121212] border-t border-white/10 px-8">
+                {/* Progress Bar — visible during upload */}
+                {loading && (
+                    <div className="pt-3 pb-1">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs text-white/60 font-medium">
+                                {uploadProgress < 80
+                                    ? `Uploading to server... ${uploadProgress}%`
+                                    : uploadProgress < 100
+                                    ? 'Processing on Cloudinary...'
+                                    : 'Finalizing...'}
+                            </span>
+                            <span className="text-xs font-bold text-primary">{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all duration-300"
+                                style={{ width: `${uploadProgress}%` }}
+                            />
+                        </div>
+                    </div>
+                )}
 
-                <div className="flex items-center gap-3">
-                    {step > 1 && step < 4 ? (
-                        <Button onClick={handleNext} disabled={step === 1 && !title}>
-                            Next
-                        </Button>
-                    ) : (
-                        <Button onClick={handleSubmit} disabled={loading || success} variant="hero" className="w-32">
-                            {loading || success ? <Loader2 className="w-4 h-4 animate-spin" /> : (editId ? "Update" : "Publish")}
-                        </Button>
-                    )}
+                <div className="h-16 flex items-center justify-between">
+                    <Button variant="ghost" onClick={handleBack} disabled={loading}>
+                        {step === 1 ? "Cancel" : "Back"}
+                    </Button>
+
+                    <div className="flex items-center gap-3">
+                        {step > 1 && step < 4 ? (
+                            <Button onClick={handleNext} disabled={step === 1 && !title}>
+                                Next
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={handleSubmit}
+                                disabled={loading || success}
+                                variant="hero"
+                                className="min-w-[120px]"
+                            >
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        {uploadProgress < 80 ? 'Uploading...' : 'Processing...'}
+                                    </span>
+                                ) : (editId ? "Update" : "Publish")}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

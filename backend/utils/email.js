@@ -135,6 +135,98 @@ export const sendSubscriptionEmail = async (email) => {
   }
 };
 
+// ─── New Subscriber Notification to Creator ────────────────────────────────────
+export const sendNewSubscriberEmail = async ({ creatorEmail, creatorName, subscriberName, totalSubscribers }) => {
+  const year = new Date().getFullYear();
+
+  const mailOptions = {
+    from: `"ALPHA Podcast Platform" <${process.env.EMAIL_USER}>`,
+    to: creatorEmail,
+    subject: `🎉 ${subscriberName} just subscribed to your channel!`,
+    html: `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0f0f0f; padding: 40px 0; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+
+          <!-- Header Banner -->
+          <div style="background: linear-gradient(135deg, #FF4B2B 0%, #FF416C 50%, #c850c0 100%); padding: 50px 30px; text-align: center;">
+            <div style="font-size: 52px; margin-bottom: 12px;">🎉</div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 30px; font-weight: 800; letter-spacing: 1px;">You Got a New Subscriber!</h1>
+            <p style="color: rgba(255,255,255,0.85); margin: 10px 0 0; font-size: 15px; font-weight: 400;">Your channel is growing. Keep creating! 🚀</p>
+          </div>
+
+          <!-- Main Content -->
+          <div style="padding: 42px 36px;">
+
+            <!-- Greeting -->
+            <p style="color: #e0e0e0; font-size: 17px; line-height: 1.7; margin: 0 0 24px;">
+              Hey <strong style="color: #ffffff;">${creatorName}</strong>, 👋
+            </p>
+
+            <!-- Subscriber Card -->
+            <div style="background: linear-gradient(135deg, rgba(255,75,43,0.12) 0%, rgba(255,65,108,0.12) 100%); border: 1px solid rgba(255,75,43,0.3); border-radius: 14px; padding: 24px; margin: 24px 0; text-align: center;">
+              <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #FF4B2B, #FF416C); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: white; font-size: 26px; line-height: 60px; display: block;">👤</span>
+              </div>
+              <p style="color: #aaaaaa; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 6px;">New Subscriber</p>
+              <h2 style="color: #ffffff; font-size: 26px; font-weight: 800; margin: 0; letter-spacing: 0.5px;">${subscriberName}</h2>
+              <p style="color: #888888; font-size: 14px; margin: 8px 0 0;">just hit that Subscribe button on your channel ❤️</p>
+            </div>
+
+            <!-- Subscriber Count Badge -->
+            <div style="background-color: #242424; border-radius: 12px; padding: 18px 24px; margin: 20px 0; display: flex; align-items: center; text-align: center;">
+              <div style="width: 100%;">
+                <p style="color: #888888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px;">Total Subscribers</p>
+                <p style="color: #FF416C; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: 2px;">${totalSubscribers.toLocaleString()}</p>
+              </div>
+            </div>
+
+            <!-- Message -->
+            <p style="color: #bbbbbb; font-size: 16px; line-height: 1.8; margin: 24px 0;">
+              Every subscriber represents someone who believes in your voice and your content.
+              <strong style="color: #ffffff;">${subscriberName}</strong> chose <em>you</em> out of everyone on ALPHA — that's something truly special. 🌟
+            </p>
+
+            <p style="color: #bbbbbb; font-size: 16px; line-height: 1.8; margin: 0 0 32px;">
+              Keep creating authentic, compelling content and your community will continue to grow. You're building something amazing.
+            </p>
+
+            <!-- CTA Button -->
+            <div style="text-align: center; margin: 32px 0 0;">
+              <a href="https://alpha-podcast.vercel.app/profile"
+                 style="background: linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 700; display: inline-block; letter-spacing: 0.5px; box-shadow: 0 8px 24px rgba(255,65,108,0.4);">
+                View Your Channel →
+              </a>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 0 30px;"></div>
+
+          <!-- Footer -->
+          <div style="padding: 28px 36px; text-align: center;">
+            <p style="color: #444444; font-size: 13px; margin: 0 0 6px;">
+              You're receiving this because you're a creator on
+              <strong style="color: #FF416C;">ALPHA Podcast Platform</strong>
+            </p>
+            <p style="color: #333333; font-size: 12px; margin: 0;">
+              © ${year} ALPHA Podcast Platform. Made with ❤️ for creators.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] New subscriber notification sent to ${creatorEmail}`);
+  } catch (error) {
+    console.error('[EMAIL] Failed to send subscriber notification:', error.message);
+    // Don't throw — email failure should not break the subscribe action
+  }
+};
+
+
 export const sendContactEmail = async ({ name, email, subject, message }) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
